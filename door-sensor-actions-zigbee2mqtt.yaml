@@ -3,36 +3,36 @@ blueprint:
   description: Execute any action when a door is opened.
   domain: automation
   input:
-    doorsensor_entity:
+    source_selector:
       name: Door Sensor
       selector:
         entity:
           domain: binary_sensor
-    opening_action:
-      name: Opening
-      description: Opening is active
-      default: []
+          multiple: false
+    target_opening_action:
+      name: Opening action
+      description: When contacts are distant.
+      default:
       selector:
         action: {}
-    closing_action:
-      name: Closing
-      description: Closing is active
-      default: []
+    target_closing_action:
+      name: Closing action
+      description: When contacts are very close.
+      default:
       selector:
         action: {}
-
 mode: single
 max_exceeded: silent
-
 trigger:
   platform: state
-  entity_id: !input doorsensor_entity
-
+  entity_id: !input 'source_selector'
 action:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state =='on' }}"
-        sequence: !input 'opening_action'
-    default:
-      sequence: !input 'closing_action'
+            value_template: '{{ trigger.to_state.state == ''on'' }}'
+        sequence: !input 'target_closing_action'
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.to_state.state == ''off'' }}'
+        sequence: !input 'target_opening_action'

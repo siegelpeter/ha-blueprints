@@ -5,6 +5,7 @@ blueprint:
   input:
     source_selector:
       name: Door Sensor
+      default: {}
       selector:
         entity:
           domain: binary_sensor
@@ -12,13 +13,13 @@ blueprint:
     target_opening_action:
       name: Opening action
       description: When contacts are distant.
-      default:
+      default: {}
       selector:
         action: {}
     target_closing_action:
       name: Closing action
       description: When contacts are very close.
-      default:
+      default: {}
       selector:
         action: {}
 mode: single
@@ -34,5 +35,5 @@ action:
         sequence: !input 'target_closing_action'
       - conditions:
           - condition: template
-            value_template: '{{ trigger.to_state.state == ''off'' }}'
+            value_template: '{{ or trigger.to_state.state == ''off'' }}'
         sequence: !input 'target_opening_action'

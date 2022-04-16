@@ -33,6 +33,6 @@ action:
   - conditions:
     - condition: template
       value_template: "{{ trigger.to_state.state =='on' }}"
-    sequence: !input 'opening_action'
+    sequence: !input opening_action
   default:
-    sequence: !input 'closing_action'
+    sequence: !input closing_action

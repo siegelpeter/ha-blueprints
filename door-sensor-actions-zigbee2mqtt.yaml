@@ -38,7 +38,8 @@ condition:
 action:
   - choose:
       - conditions:
-          - condition: '{{ command == ''on'' }}'
+          - condition: template
+            value_template: '{{ command == ''on'' }}'
         sequence: !input 'opening_action'
     default:
       sequence: !input 'closing_action'

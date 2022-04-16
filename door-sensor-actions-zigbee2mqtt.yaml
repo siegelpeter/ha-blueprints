@@ -28,11 +28,17 @@ trigger:
   platform: state
   entity_id: !input doorsensor_entity
 
+variables:
+  command: '{{ trigger.to_state.state }}'
+
+condition:
+  - condition: template
+    value_template: "{{ command != ''}}"
+
 action:
 - choose:
   - conditions:
-    - condition: template
-      value_template: "{{ trigger.to_state.state =='on' }}"
-    sequence: !input opening_action
+     - '{{ command == ''on'' }}'
+     sequence: !input 'on_button_short'
   default:
-    sequence: !input closing_action
+     sequence: !input closing_action

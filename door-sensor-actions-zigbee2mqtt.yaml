@@ -5,7 +5,6 @@ blueprint:
   input:
     source_selector:
       name: Door Sensor
-      default:
       selector:
         entity:
           domain: binary_sensor

@@ -37,7 +37,7 @@ condition:
 
 action:
 - choose:
-  - conditions: '{{ command == ‘’on‘’ }}'
+  - conditions: '{{ command == ''on'' }}'
      sequence: !input opening_action
-  - conditions: '{{ command == ‘’off‘’ }}'
+  - conditions: '{{ command == ''off'' }}'
      sequence: !input closing_action

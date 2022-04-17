@@ -1,0 +1,32 @@
+blueprint:
+  name: blink light
+  description: Script for blinking an light bulb - you can firstly use scenes to set light colors.
+  domain: script
+  input:
+    light_selector:
+      name: Light
+      default:
+      selector:
+        entity:
+          domain: light
+          multiple: false
+sequence:
+  - repeat:
+      count: '20'
+      sequence:
+        - service: light.toggle
+          target:
+            device_id: !input 'light_selector'
+          data:
+            flash: short
+            transition: 2
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 2
+            milliseconds: 0
+  - type: turn_off
+    device_id: !input 'light_selector'
+max_exceeded: silent
+mode: single
+icon: hassio:lightbulb-on

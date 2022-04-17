@@ -5,7 +5,7 @@ blueprint:
   input:
     source_selector:
       name: Door Sensor
-      default: {}
+      default:
       selector:
         entity:
           domain: binary_sensor
@@ -13,13 +13,13 @@ blueprint:
     target_opening_action:
       name: Opening action
       description: When contacts are distant.
-      default: {}
+      default:
       selector:
         action: {}
     target_closing_action:
       name: Closing action
       description: When contacts are very close.
-      default: {}
+      default:
       selector:
         action: {}
 mode: single

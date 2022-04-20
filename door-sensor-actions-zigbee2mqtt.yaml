@@ -1,5 +1,5 @@
 blueprint:
-  name: Door Sensor-activated actions
+  name: Door Sensor-activated actions (zigbee2mqtt)
   description: Execute any action when a door is opened.
   domain: automation
   input:

@@ -1,6 +1,6 @@
 blueprint:
-  name: Door Sensor-activated actions (zigbee2mqtt)
-  description: Execute any action when a door is opened.
+  name: Door Sensor - actions (for zigbee2mqtt)
+  description: Execute any action when a door is opened or closed.
   domain: automation
   input:
     source_selector:
@@ -12,13 +12,13 @@ blueprint:
           multiple: false
     target_opening_action:
       name: Opening action
-      description: When contacts are distant.
+      description: When sensor contacts are distant.
       default:
       selector:
         action: {}
     target_closing_action:
       name: Closing action
-      description: When contacts are very close.
+      description: When sensor contacts are very close.
       default:
       selector:
         action: {}
@@ -31,10 +31,10 @@ action:
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.to_state.attributes.contact }}'
+        value_template: "{{ trigger.to_state.state == 'off' }}"
       sequence: !input 'target_closing_action'
     - conditions:
       - condition: template
-        value_template: '{{ not (trigger.to_state.attributes.contact) }}'
+        value_template: "{{ trigger.to_state.state == 'on' }}"
       sequence: !input 'target_opening_action'
     default: []

@@ -47,6 +47,8 @@ sequence:
         sequence:
           - service: scene.turn_on
             entity_id: !input scene_target
+          - delay:
+              seconds: 1
   - repeat:
       count: "{{ repetitions * 2 }}"
       sequence:

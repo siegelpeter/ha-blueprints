@@ -1,32 +1,62 @@
 blueprint:
   name: blink light
-  description: Script for blinking an light bulb - you can firstly use scenes to set light colors.
+  description:  >-
+    Script for blinking a light bulb - you can firstly use scenes to set
+    light colors.
   domain: script
   input:
     light_selector:
       name: Light
-      default:
+      selector:
+        target:
+          entity:
+            domain: light
+    delay_duration:
+      name: Delay Duration
+      description: "Delay duration in seconds"
+      default: 1
+      selector:
+        number:
+          min: 0.1
+          max: 10
+          unit_of_measurement: seconds
+    repetitions:
+      name: Repetitions
+      description: "Number of repetitions"
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 500
+    scene_target:
+      name: Scene to activate before
+      description: "Scene to activate before blinking the light"
+      default: scene.none
       selector:
         entity:
-          domain: light
-          multiple: false
+          domain: scene
+
+variables:
+  scene_target: !input scene_target
+  repetitions: !input repetitions
+
 sequence:
+  - choose:
+      - conditions:
+         - "{{ scene_target != 'scene.none' }}"
+        sequence:
+          - service: scene.turn_on
+            entity_id: !input scene_target
   - repeat:
-      count: '20'
+      count: "{{ repetitions * 2 }}"
       sequence:
         - service: light.toggle
-          target:
-            device_id: !input 'light_selector'
-          data:
-            flash: short
-            transition: 2
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 2
-            milliseconds: 0
-  - type: turn_off
-    device_id: !input 'light_selector'
-max_exceeded: silent
+          data: {}
+          target: !input light_selector
+        - delay: !input delay_duration
+  - service: light.turn_off
+    data: {}
+    target: !input light_selector
+
 mode: single
 icon: hassio:lightbulb-on

@@ -1,0 +1,67 @@
+blueprint:
+  name: Door Sensor - actions with Lux Sensor (for zigbee2mqtt)
+  description: Execute actions when a door is opened or closed, based on lux sensor value.
+  domain: automation
+  input:
+    source_selector:
+      name: Door Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          multiple: false
+    target_opening_action:
+      name: Opening action
+      description: Action when sensor contacts are distant (door opened).
+      selector:
+        action: {}
+    target_closing_action:
+      name: Closing action
+      description: Action when sensor contacts are very close (door closed).
+      selector:
+        action: {}
+    lux_sensor:
+      name: Lux Sensor
+      description: The entity that indicates the current light level.
+      selector:
+        entity:
+          domain: sensor
+          device_class: illuminance
+    lux_threshold:
+      name: Lux Threshold
+      description: The lux value below which the actions are executed.
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 1000
+          unit_of_measurement: 'lx'
+    keep_lights_on_time:
+      name: Keep Lights On Duration
+      description: The duration to keep the lights on after the door closes, in `HH:MM:SS` format.
+      default: "00:01:00"  # 1 minute default
+      selector:
+        text:
+mode: single
+max_exceeded: silent
+trigger:
+  platform: state
+  entity_id: !input 'source_selector'
+condition:
+  - condition: numeric_state
+    entity_id: !input 'lux_sensor'
+    below: !input 'lux_threshold'
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'off' }}"
+        sequence:
+          - service: light.turn_on
+            data: !input 'target_closing_action'
+          - delay: "{{ !input 'keep_lights_on_time' }}"  # Uses the full time string format
+          - service: light.turn_off
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+        sequence: !input 'target_opening_action'
+    default: []

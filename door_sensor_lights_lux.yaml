@@ -1,6 +1,8 @@
 blueprint:
-  name: Door Sensor - actions with optional Lux Sensor (for zigbee2mqtt)
-  description: Execute actions when a door is opened or closed, optionally based on lux sensor value.
+  name: Door Sensor - actions with Optional Lux Sensor (for zigbee2mqtt)
+  description: >
+    Execute actions when a door is opened or closed, based on an optional lux sensor value.
+    If a lux sensor is provided, actions will only be executed when the lux value is below the threshold.
   domain: automation
   input:
     source_selector:
@@ -11,23 +13,17 @@ blueprint:
           multiple: false
     target_opening_action:
       name: Opening action
-      description: Action when the sensor contacts are distant (door opened).
+      description: Action when sensor contacts are distant (door opened).
       selector:
         action: {}
     target_closing_action:
       name: Closing action
-      description: Action when the sensor contacts are very close (door closed).
+      description: Action when sensor contacts are very close (door closed).
       selector:
         action: {}
-    target_closing_end_action:
-      name: Closing End Action
-      description: Action to execute after the keep lights on duration has passed.
-      selector:
-        action: {}
-      default: []
     lux_sensor:
       name: Lux Sensor (Optional)
-      description: The entity that indicates the current light level. Leave empty to ignore lux value.
+      description: The entity that indicates the current light level.
       selector:
         entity:
           domain: sensor
@@ -50,14 +46,17 @@ blueprint:
         text:
 mode: single
 max_exceeded: silent
+variables:
+  lux_sensor: !input 'lux_sensor'
+  lux_threshold: !input 'lux_threshold'
 trigger:
-  platform: state
-  entity_id: !input 'source_selector'
+  - platform: state
+    entity_id: !input 'source_selector'
 condition:
   - condition: template
     value_template: >
-      {% if input.lux_sensor != '' %}
-        {{ states(input.lux_sensor) | float(9999) < (input.lux_threshold | float) }}
+      {% if lux_sensor != '' %}
+        {{ states(lux_sensor) | float(9999) < lux_threshold }}
       {% else %}
         true
       {% endif %}
@@ -67,24 +66,12 @@ action:
           - condition: template
             value_template: "{{ trigger.to_state.state == 'off' }}"
         sequence:
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ input.target_closing_action != [] }}"
-                sequence: !input 'target_closing_action'
-          - delay: "{{ input.keep_lights_on_time }}"
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ input.target_closing_end_action != [] }}"
-                sequence: !input 'target_closing_end_action'
+          - service: light.turn_on
+            data: !input 'target_closing_action'
+          - delay: "{{ !input 'keep_lights_on_time' }}"  # Uses the full time string format
+          - service: light.turn_off
       - conditions:
           - condition: template
             value_template: "{{ trigger.to_state.state == 'on' }}"
-        sequence:
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ input.target_opening_action != [] }}"
-                sequence: !input 'target_opening_action'
+        sequence: !input 'target_opening_action'
     default: []

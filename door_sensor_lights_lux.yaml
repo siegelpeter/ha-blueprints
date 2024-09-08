@@ -1,6 +1,8 @@
 blueprint:
-  name: Door Sensor - actions with Lux Sensor (for zigbee2mqtt)
-  description: Execute actions when a door is opened or closed, based on lux sensor value.
+  name: Door Sensor - actions with Optional Lux Sensor (for zigbee2mqtt)
+  description: >
+    Execute actions when a door is opened or closed, based on an optional lux sensor value.
+    If a lux sensor is provided, actions will only be executed when the lux value is below the threshold.
   domain: automation
   input:
     source_selector:
@@ -20,8 +22,9 @@ blueprint:
       selector:
         action: {}
     lux_sensor:
-      name: Lux Sensor
+      name: Lux Sensor (Optional)
       description: The entity that indicates the current light level.
+      required: false
       selector:
         entity:
           domain: sensor
@@ -43,13 +46,20 @@ blueprint:
         text:
 mode: single
 max_exceeded: silent
+variables:
+  lux_sensor: !input 'lux_sensor'
+  lux_threshold: !input 'lux_threshold'
 trigger:
-  platform: state
-  entity_id: !input 'source_selector'
+  - platform: state
+    entity_id: !input 'source_selector'
 condition:
-  - condition: numeric_state
-    entity_id: !input 'lux_sensor'
-    below: !input 'lux_threshold'
+  - condition: template
+    value_template: >
+      {% if lux_sensor %}
+        {{ states(lux_sensor) | float(9999) < lux_threshold }}
+      {% else %}
+        true
+      {% endif %}
 action:
   - choose:
       - conditions:
